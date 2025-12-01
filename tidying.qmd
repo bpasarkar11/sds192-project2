@@ -1,0 +1,13 @@
+---
+title: "tidying"
+author: "amelia,aria,blair & cassia"
+format: html
+---
+
+
+```{r}
+#Importing data:
+NYC_film_data <- read.csv("~Documents/final_project2/Film_Permits_20251201.csv")
+
+```
+
