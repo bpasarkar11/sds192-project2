@@ -26,6 +26,7 @@ NYC_tidy <- NYC_film_data |>
     Month %in% c(3, 4, 5)  ~ "Spring",
     Month %in% c(6, 7, 8)  ~ "Summer",
     Month %in% c(9, 10,11) ~ "Autumn",
-    TRUE ~ NA_character_))
+    TRUE ~ NA_character_),
+    write.csv(NYC_tidy, "NYC_TIDY.csv"))
 ```
 
