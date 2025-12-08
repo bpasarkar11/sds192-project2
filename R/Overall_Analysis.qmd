@@ -1,0 +1,79 @@
+---
+title: "Overall Analysis"
+format: html
+---
+
+```{r}
+#Importing data:
+library(tidyverse)
+NYC_film_data <- read.csv("Film_Permits_20251201.csv")
+```
+
+```{r}
+NYC_tidy <- NYC_film_data |>
+  select(Borough, Category, StartDateTime, EventType, SubCategoryName) |>
+  filter(SubCategoryName != "Not Applicable") |>
+  filter(EventType == "Shooting Permit") |>
+  mutate(
+    StartDateTime = mdy_hms(StartDateTime),
+    Month = month(StartDateTime),
+    Day   = day(StartDateTime),
+    Year  = year(StartDateTime)) |>
+  mutate(Season = case_when(
+    Month %in% c(12, 1, 2) ~ "Winter",
+    Month %in% c(3, 4, 5)  ~ "Spring",
+    Month %in% c(6, 7, 8)  ~ "Summer",
+    Month %in% c(9, 10,11) ~ "Autumn",
+    TRUE ~ NA_character_))
+    
+```
+
+
+## Cassia 
+```{r}
+NYC_table <-
+NYC_tidy |>  
+  group_by(Borough, Category) |>  
+  summarize(Count = n(), 
+            meanDay = mean(Day), 
+            meanMonth = mean(Month), 
+            meanYear = mean(Year)) |> 
+arrange(desc(Count))
+```
+
+From the table, it can be seen that most film permits for television shows have been allocated to Manhattan. Furthermore, the highest three counts of film permits are all for television series. The mean day for the top three boroughs in the table were also similarly around 15.3-15.5. The lowest borough and category in count was the Bronx for a music video with a count of 1, which could indicate a low overall demand for music video permits. The average day in which a film permit was allocated, however, remained around 15-17 for most Boroughs and categories. This may indicate that most film permits are generally allocated around the 15-17 day range to the specific category of television series; this could be a film industry standard. Additionally, Manhattan seems to be the most popular borough to allocate film permits too. This may suggest that there is a larger demand for films in Manhattan than in other boroughs in New York City, which could be due to a more developed film industry or a bigger population in Manhattan. 
+
+## Amelia 
+```{r}
+NYC_tidy |>
+  ggplot(aes(x = Borough, y = Month)) +
+  geom_boxplot(aes(fill = Borough), alpha = 0.7) +
+  coord_flip() +
+  scale_y_continuous(breaks = seq(1, 12, 1)) +
+  theme_minimal() +
+  guides(fill = "none") +
+  labs(title = "Distribution of Filming Across Months by Borough",
+    y = "Month",
+    x = "")
+```
+
+This plot is significant because it illustrates the distribution of filming across all 12 months, separated by borough. Each boxplot shows us the first and third quartiles, as well as the median and any outliers. Staten Island is the only borough with outliers, and it has 3 for October, November, and December. Staten Island also had the smallest interquartile range, from April to June with the median at May, suggesting that Staten Island has a pretty limited filming season. Manhattan and Brooklyn have the longest interquartile range, from March to August, meaning there is more frequent diversity in the seasons that are used for filming, However Brooklyn's median is in May and Manhattan's median is in June. The Bronx and Queens have the same median of April. The varying medians suggest that each borough might have its own use or unique qualities that make one season more popular than another for the film industry. One thing is clear though; the most popular time for filming in New York City is mid spring to early summer.
+
+
+## Blair 
+```{r}
+NYC_tidy|>
+  filter(!is.na(Borough)) |>
+  ggplot(aes(x = Borough, 
+             fill = Category)) +
+  geom_bar() +
+  labs(title = "Amount of Shooting Permits for Each Borough",
+       x = "Borough",
+       y = "Amount of Shootings Permits") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Paired") +
+  theme_minimal()
+```
+
+This bar plot shows us the distribution of shooting permits for every NYC borough, separated by the category of filming. From this plot, we can see that Manhattan is the most popular shooting location, with nearly 4000 shooting permits given out, whereas Staten Island is the least popular, with just about 100 total. Within the boroughs, we can see a consistent trend of Television being the top category of film, followed by Film and then Commercial. However, this trend is not consistent for Staten Island, where Film permits are more common than Television permits--differing from the other boroughs, where Television dominates well over half of all permits. Music Video, Student, and Theater permits hold very low numbers across all boroughs.
+
