@@ -1,0 +1,101 @@
+---
+title: "EDA"
+format: html
+---
+
+```{r}
+#Importing data:
+library(tidyverse)
+NYC_film_data <- read.csv("Film_Permits_20251201.csv")
+```
+
+
+```{r}
+NYC_tidy <- NYC_film_data |>
+  select(Borough, Category, StartDateTime, EventType, SubCategoryName) |>
+  filter(SubCategoryName != "Not Applicable") |>
+  filter(EventType == "Shooting Permit") |>
+  mutate(
+    StartDateTime = mdy_hms(StartDateTime),
+    Month = month(StartDateTime),
+    Day   = day(StartDateTime),
+    Year  = year(StartDateTime)) |>
+  mutate(Season = case_when(
+    Month %in% c(12, 1, 2) ~ "Winter",
+    Month %in% c(3, 4, 5)  ~ "Spring",
+    Month %in% c(6, 7, 8)  ~ "Summer",
+    Month %in% c(9, 10,11) ~ "Autumn",
+    TRUE ~ NA_character_))
+    
+```
+
+
+## Cassia 
+```{r}
+NYC_zip <- unlist(NYC_film_data$ZipCode) 
+
+zip_sep <- separate_rows(NYC_film_data,ZipCode.s., sep = ",") 
+
+NYC_tidy_data <- zip_sep |>
+  select(Borough, Category, StartDateTime, EventType, SubCategoryName, ZipCode.s.) |>
+  filter(SubCategoryName != "Not Applicable") |>
+  filter(EventType == "Shooting Permit") |>
+  mutate(
+    StartDateTime = mdy_hms(StartDateTime),
+    Month = month(StartDateTime),
+    Day   = day(StartDateTime),
+    Year  = year(StartDateTime)) |>
+  mutate(Season = case_when(
+    Month %in% c(12, 1, 2) ~ "Winter",
+    Month %in% c(3, 4, 5)  ~ "Spring",
+    Month %in% c(6, 7, 8)  ~ "Summer",
+    Month %in% c(9, 10,11) ~ "Autumn",
+    TRUE ~ NA_character_))
+    
+  
+
+NYC_zip_10 <- 
+   NYC_tidy_data|>  
+  group_by(Borough, ZipCode.s.) |> 
+  summarize(Count = n()) |> 
+  arrange(desc(Count)) |> 
+  head(10)
+```
+
+Looking at the different zip codes in NYC, we can see that even though a Brooklyn zip code has the most permits allocated, the other top ten highest film permit counts are entirely in Manhattan, except for the second highest number of film permits in Queens. This showcases that while other boroughs have a higher initial count, most film permits are being allocated to Manhattan. This may imply that Manhattan has more demand for film permits or more zip codes in the borough than in other boroughs. 
+
+
+## Blair  
+```{r}
+NYC_tidy|>
+  filter(!is.na(Season))|>
+  ggplot(aes(x= Season, fill =Category))+
+  geom_bar()+
+  labs(title = "Amount of Shooting Permits Throughout the Seasons",
+       x = "Season",
+       y = "Amount of Shootings Permits")+
+  coord_flip()+
+  scale_fill_brewer(palette = "Paired")+
+  theme_minimal()
+```
+
+## Amelia Analysis 
+This stacked bar plot demonstrates the amount of shooting permits throughout the seasons. The plot uses the coordflip function, therefore the y-axis is the season and the x-axis is the amount of shooting permits. The stacked bar is made up of the different categories of shooting permits. Within all 4 seasons, television is the highest while commercial and film compete for second and third. There are very small amounts of music video and student shooting permits occurring throughout all four seasons, as well. The theater category had the lowest amount of permits throughout all seasons. Spring has the highest overall number of shooting permits at a little over 3000 and Autumn has the lowest just under 1500. 
+
+
+## Aria  
+```{r}
+NYC_tidy2 <- NYC_tidy |> 
+  mutate(SubCategoryName2 = fct_lump_n(SubCategoryName, n = 5, other_level = "Other"))
+
+ggplot(NYC_tidy2, aes(x = Category, fill = SubCategoryName2)) +
+  geom_bar() +
+  labs(
+    x = "Description of production as selected by permit applicant", 
+    y = "Count",
+    fill = "Sub-category top 5 + Others)") + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+```
+
+This bar plot shows the distribution of shooting permits by type of production, separated by the sub-category of filming. From this plot, we can see that Television is the most common production type by a large margin, with nearly 6,000 permits issued, whereas Theater, Student, and Music Video productions are the least common, with only a very small number of permits overall. Within the production types, we see a consistent trend of episodic series being the most frequent sub-category, followed by cable-episodic, particularly within Television. This same dominance of episodic content is not present in Film and Commercial permits, where the permits are more concentrated within their respective categories. Overall, Television clearly dominates the permit distribution, while all other production types make up a smaller share of total permits.
